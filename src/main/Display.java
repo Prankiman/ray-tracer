@@ -157,9 +157,12 @@ public class Display extends JPanel implements ActionListener, KeyListener{
 	        	
 	        	
 	        	
-	        	specular = Math.max(-Vect.Vector_DotProduct(refl.direction, Vect.Vector_Normalise(Vect.subV(hit, lightSrc))), 0);
+	        	specular = Math.max(Math.min(1,-Vect.Vector_DotProduct(refl.direction, Vect.Vector_Normalise(Vect.subV(hit, lightSrc)))), 0);
 	        	
-	        	f+= specular;
+	        	specular*=specular*ob.reflectivity;
+	        	
+	        	int reflectedF = (int)(Math.min(f*specular*150, 150));
+
 	        	
 	        	if(f > 1) {
 	        		f = 1f;
@@ -184,10 +187,13 @@ public class Display extends JPanel implements ActionListener, KeyListener{
             		
             	}
     			else
-    				cl = new Color((int)(skyBox(Vect.Vector_Mul(refl.direction, -1)).getRed()*f*ob.reflectivity+ob.c.getRed()*f*(1-ob.reflectivity)),
-	    					(int)(skyBox(Vect.Vector_Mul(refl.direction, -1)).getGreen()*f*ob.reflectivity+ob.c.getGreen()*f*(1-ob.reflectivity)) ,
-	    					(int)(skyBox(Vect.Vector_Mul(refl.direction, -1)).getBlue()*f*ob.reflectivity+ob.c.getBlue()*f*(1-ob.reflectivity)));
-	    		
+    				try {
+    					cl = new Color((int)(skyBox(Vect.Vector_Mul(refl.direction, -1)).getRed()*f*ob.reflectivity+ob.c.getRed()*f*(1-ob.reflectivity)+reflectedF),
+    							(int)(skyBox(Vect.Vector_Mul(refl.direction, -1)).getGreen()*f*ob.reflectivity+ob.c.getGreen()*f*(1-ob.reflectivity)+reflectedF) ,
+    							(int)(skyBox(Vect.Vector_Mul(refl.direction, -1)).getBlue()*f*ob.reflectivity+ob.c.getBlue()*f*(1-ob.reflectivity)+reflectedF));
+    				}catch(Exception e) {
+    					cl = Color.white;
+    				}
 	    		
 	    		//if the reflection ray has intersected other object
 	    		if(rPI != null) {
@@ -196,9 +202,13 @@ public class Display extends JPanel implements ActionListener, KeyListener{
 	    					(int)(reflC.getGreen()*f*ob.reflectivity+ob.c.getGreen()*f*(1-ob.reflectivity))/5 ,
 	    					(int)(reflC.getBlue()*f*ob.reflectivity+ob.c.getBlue()*f*(1-ob.reflectivity))/5);//reflC;//new Color((int)((reflC.getBlue()*f/6)+ob.c.getBlue()*f/2),(int)((reflC.getGreen()*f/6)+ob.c.getGreen()*f/2),(int)((reflC.getBlue()*f/6)+ob.c.getBlue()*f/2));
 	    			else
-	    				cl = new Color((int)(reflC.getRed()*f*ob.reflectivity+ob.c.getRed()*f*(1-ob.reflectivity)),
-		    					(int)(reflC.getGreen()*f*ob.reflectivity+ob.c.getGreen()*f*(1-ob.reflectivity)) ,
-		    					(int)(reflC.getBlue()*f*ob.reflectivity+ob.c.getBlue()*f*(1-ob.reflectivity)));
+	    				try {
+		    				cl = new Color((int)(reflC.getRed()*f*ob.reflectivity+ob.c.getRed()*f*(1-ob.reflectivity)+reflectedF),
+			    					(int)(reflC.getGreen()*f*ob.reflectivity+ob.c.getGreen()*f*(1-ob.reflectivity)+reflectedF) ,
+			    					(int)(reflC.getBlue()*f*ob.reflectivity+ob.c.getBlue()*f*(1-ob.reflectivity)+reflectedF));
+	    				}catch(Exception e) {
+	    					cl = Color.white;
+	    				}
 	    		}	
 	    		
 	    		
