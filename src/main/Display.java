@@ -110,7 +110,7 @@ public class Display extends JPanel implements ActionListener, KeyListener{
 	       
 	       Vect lightSrc = new Vect();
 			//creating a vector representing ilumination point used to determine shadows and lighting/shading
-	       lightSrc.x = 0f;  lightSrc.z = -10; lightSrc.y = -20f;
+	       lightSrc.x = 0f;  lightSrc.z = -1; lightSrc.y = -1f;
 	        
 	       if(closestHit(ray) != null){
 		       	ob = closestHit(ray).o;
@@ -146,22 +146,20 @@ public class Display extends JPanel implements ActionListener, KeyListener{
 	        	
 	        	norm =  ob.getNormalAt(hit);
 	        
+	        	
+	        	specular = Math.max(Math.min(1,-Vect.Vector_DotProduct(refl.direction, Vect.Vector_Normalise(Vect.subV(hit, lightSrc)))), 0);
+	       
+	        	specular*=specular*ob.reflectivity; 	
+	        	
+	        	
 	        	//trace the reflected ray and get reflected color
 	    		if(refl != null && recursionlim > 0) {
 		        	reflC = raytrace(refl, recursionlim-1);
 	    		}
 	    		
 	    		
-	        	double luminance = 0.2f;
+	        	double luminance = 0.2f;//add a bit of brightness
 		     	f = luminance-(Vect.Vector_DotProduct(norm,Vect.Vector_Normalise(Vect.subV(hit, lightSrc))));
-	        	
-	        	
-	        	
-	        	specular = Math.max(Math.min(1,-Vect.Vector_DotProduct(refl.direction, Vect.Vector_Normalise(Vect.subV(hit, lightSrc)))), 0);
-	        	
-	        	specular*=specular*ob.reflectivity;
-	        	
-	        	int reflectedF = (int)(Math.min(f*specular*150, 150));
 
 	        	
 	        	if(f > 1) {
@@ -169,6 +167,8 @@ public class Display extends JPanel implements ActionListener, KeyListener{
 	        	}
 	        	if(f < 0.3)//minimum difuse lighting
 	        		f = 0.3;
+	        	
+	        	int reflectedF = (int)(Math.min(f*specular*100, 100));
 	        	
 	        	Ray shadowray = new Ray();
 	        	

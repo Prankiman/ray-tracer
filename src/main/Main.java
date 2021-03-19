@@ -47,7 +47,7 @@ public class Main {
 			Display.spherecenter2.x = 0; Display.spherecenter2.y = 0; Display.spherecenter2.z = -1f;
 			Display.spherecenter3.x = -1; Display.spherecenter3.y = 0.5; Display.spherecenter3.z = 0.5f;
 			Display.spherecenter.x = 1; Display.spherecenter.y = 0; Display.spherecenter.z = 0f;
-			Display.addObjects(Display.s, Display.s2, Display.s3);
+			Display.addObjects(Display.s, Display.p, Display.s2, Display.s3);
 			Display.ready = true;
 			f.add(d);
 			f.addKeyListener(d);
