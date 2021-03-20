@@ -29,7 +29,7 @@ public class Main {
 			Display d = new Display();
 			JFrame f = new JFrame();
 			try {
-				skybox = ImageIO.read(Main.class.getClassLoader().getResource("nightSky.jpg"));//ImageIO.read(new File("res/time_square.jpg"));
+				skybox = ImageIO.read(Main.class.getClassLoader().getResource("nightSky.jpg"));//ImageIO.read(new File("res/file.format"));
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

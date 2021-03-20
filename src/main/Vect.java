@@ -83,6 +83,20 @@ public class Vect{
     	r.direction = reflectionVector;
     	return r;
 	}
+	public static  Ray refract(Vect v, Vect dir, Vect normal) {
+	double r = 0.66;//refraction amount
+	
+		Ray ry = new Ray();
+	
+		double cosI = Vect.Vector_DotProduct(normal, dir);
+	
+		ry.direction = Vect.subV(Vect.Vector_Mul(dir, r), Vect.Vector_Mul(normal,  (-cosI + r * cosI)));
+	
+
+		ry.origin = Vect.addV(v, Vect.Vector_Mul(ry.direction, 0.0001));
+		
+		return ry;
+	}
 	
 	public static  Vect Matrix_MultiplyVector(double[][] m, Vect n)
 	{

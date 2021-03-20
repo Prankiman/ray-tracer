@@ -12,11 +12,12 @@ public class Sphere  extends object3d{
     
     
 
-    public Sphere(Vect position, double radius, Color c, double refl) {
+    public Sphere(Vect position, double radius, Color c, double refl, boolean seeThrough) {
         this.radius = radius;
         this.position = position;
         this.c = c;
         this.reflectivity = refl;
+        this.seeThrough = seeThrough;
     }
     
     @Override

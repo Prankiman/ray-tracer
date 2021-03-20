@@ -60,12 +60,12 @@ public class Display extends JPanel implements ActionListener, KeyListener{
 	
 	Graphics g;
 	
-	static Sphere s = new Sphere(spherecenter ,0.4f, new Color(0.2f, 0.2f, 0.9f), 0.5);//creating a sphere
+	static Sphere s = new Sphere(spherecenter ,0.4f, new Color(0.2f, 0.2f, 0.9f), 1, true);//creating a sphere
 	
-	static Sphere s2 = new Sphere(spherecenter2 ,0.2f, new Color(0.2f, 0.2f, 0.2f), 1);//creating a sphere
-	static Sphere s3 = new Sphere(spherecenter3 ,0.4f, new Color(0.9f, 0.2f, 0.2f), 0.1);//creating a sphere
+	static Sphere s2 = new Sphere(spherecenter2 ,0.2f, new Color(0.2f, 0.2f, 0.2f), 1, false);//creating a sphere
+	static Sphere s3 = new Sphere(spherecenter3 ,0.4f, new Color(0.9f, 0.2f, 0.2f), 0.1, false);//creating a sphere
 	
-	static plane p= new plane(new Color(0.9f,0.3f,0.4f), 0.7f, 0.8);
+	static plane p= new plane(new Color(0.9f,0.3f,0.4f), 0.7f, 0.8, true);
   
 	static List <object3d> objects = new ArrayList<object3d>();
 	
@@ -103,7 +103,7 @@ public class Display extends JPanel implements ActionListener, KeyListener{
 	       object3d ob2 = null;
 	       Ray refl;
 	       Vect norm;
-	       Vect rPI;
+	       Vect rI;
 	      
 	  	   double f = 0, specular = 0;
 	  	   Vect lightblocked = new Vect(); //ray used to check if the ray is being blocked
@@ -129,20 +129,31 @@ public class Display extends JPanel implements ActionListener, KeyListener{
 	        }catch(Exception e) {}
 	        if (hit != null && ob != null) {
 	        
-	        
-	        	
 	        	
 	        	refl = Vect.reflect(hit, ray.direction, ob.getNormalAt(hit));
 	        	
+	        	//refractions
+	        	if(ob.seeThrough) {//https://stackoverflow.com/questions/42218704/how-to-properly-handle-refraction-in-raytracing :   calculate refraction vector
+	        		//refraction amount(refractionindex A / refractionindex B) is currently hardcoded in the refraction function
+	        		refl = Vect.refract(hit, ray.direction, ob.getNormalAt(hit));
+	        		
+	        	}
+	        	
+	        	
+	        	//trace the reflected ray and get reflected color
+	    		if(refl != null && recursionlim > 0 ) {
+		        	reflC = raytrace(refl, recursionlim-1);
+	    		}
+	    		
 	        	if(closestHit(refl) != null){
 	        		ob2 = closestHit(refl).o;
 	        	}
 	        	else ob2 = null;
 	        		
 	        	if(ob2 != null)
-	        		rPI = ob2.intersects(refl);//were the reflectionray intersects the other object
+	        		rI = ob2.intersects(refl);//were the reflectionray intersects the other object
 	        	else 
-	        		rPI = null;
+	        		rI = null;
 	        	
 	        	norm =  ob.getNormalAt(hit);
 	        
@@ -152,23 +163,19 @@ public class Display extends JPanel implements ActionListener, KeyListener{
 	        	specular*=specular*ob.reflectivity; 	
 	        	
 	        	
-	        	//trace the reflected ray and get reflected color
-	    		if(refl != null && recursionlim > 0) {
-		        	reflC = raytrace(refl, recursionlim-1);
-	    		}
-	    		
+	       
 	    		
 	        	double luminance = 0.2f;//add a bit of brightness
 		     	f = luminance-(Vect.Vector_DotProduct(norm,Vect.Vector_Normalise(Vect.subV(hit, lightSrc))));
 
 	        	
-	        	if(f > 1) {
-	        		f = 1f;
+	        	if(f > 0.8) {
+	        		f = 0.8f;
 	        	}
 	        	if(f < 0.3)//minimum difuse lighting
 	        		f = 0.3;
 	        	
-	        	int reflectedF = (int)(Math.min(f*specular*100, 100));
+	        	int reflectedF = (int)(Math.min(f*specular*170, 170));
 	        	
 	        	Ray shadowray = new Ray();
 	        	
@@ -180,23 +187,26 @@ public class Display extends JPanel implements ActionListener, KeyListener{
 	    		else
 	    			lightblocked = null;
 	    		
+	    		
+	    		Vect skyboxAdjusted = Vect.Vector_Mul(refl.direction, -1);
+	    		
 	    		if(lightblocked != null ) {//if the shadowray intersects the object make the color darker
-	    			cl = new Color((int)(skyBox(Vect.Vector_Mul(refl.direction, -1)).getRed()*f*ob.reflectivity+ob.c.getRed()*f*(1-ob.reflectivity))/5,//if the ray does not intersect other object then the sky color should be reflected on to the sphere
-	    					(int)(skyBox(Vect.Vector_Mul(refl.direction, -1)).getGreen()*f*ob.reflectivity+ob.c.getGreen()*f*(1-ob.reflectivity))/5,
-	    					(int)(skyBox(Vect.Vector_Mul(refl.direction, -1)).getBlue()*f*ob.reflectivity+ob.c.getBlue()*f*(1-ob.reflectivity))/5);
+	    			cl = new Color((int)(skyBox(skyboxAdjusted).getRed()*f*ob.reflectivity+ob.c.getRed()*f*(1-ob.reflectivity))/5,//if the ray does not intersect other object then the sky color should be reflected on to the sphere
+	    					(int)(skyBox(skyboxAdjusted).getGreen()*f*ob.reflectivity+ob.c.getGreen()*f*(1-ob.reflectivity))/5,
+	    					(int)(skyBox(skyboxAdjusted).getBlue()*f*ob.reflectivity+ob.c.getBlue()*f*(1-ob.reflectivity))/5);
             		
             	}
     			else
     				try {
-    					cl = new Color((int)(skyBox(Vect.Vector_Mul(refl.direction, -1)).getRed()*f*ob.reflectivity+ob.c.getRed()*f*(1-ob.reflectivity)+reflectedF),
-    							(int)(skyBox(Vect.Vector_Mul(refl.direction, -1)).getGreen()*f*ob.reflectivity+ob.c.getGreen()*f*(1-ob.reflectivity)+reflectedF) ,
-    							(int)(skyBox(Vect.Vector_Mul(refl.direction, -1)).getBlue()*f*ob.reflectivity+ob.c.getBlue()*f*(1-ob.reflectivity)+reflectedF));
+    					cl = new Color((int)(skyBox(skyboxAdjusted).getRed()*f*ob.reflectivity+ob.c.getRed()*f*(1-ob.reflectivity)+reflectedF),
+    							(int)(skyBox(skyboxAdjusted).getGreen()*f*ob.reflectivity+ob.c.getGreen()*f*(1-ob.reflectivity)+reflectedF) ,
+    							(int)(skyBox(skyboxAdjusted).getBlue()*f*ob.reflectivity+ob.c.getBlue()*f*(1-ob.reflectivity)+reflectedF));
     				}catch(Exception e) {
     					cl = Color.white;
     				}
 	    		
 	    		//if the reflection ray has intersected other object
-	    		if(rPI != null) {
+	    		if(rI != null) {
 	    			if(lightblocked != null )
 	    				cl = new Color((int)(reflC.getRed()*f*ob.reflectivity+ob.c.getRed()*f*(1-ob.reflectivity))/5,
 	    					(int)(reflC.getGreen()*f*ob.reflectivity+ob.c.getGreen()*f*(1-ob.reflectivity))/5 ,
@@ -214,6 +224,7 @@ public class Display extends JPanel implements ActionListener, KeyListener{
 	    		
 	    		
 	        }
+	        
 	        return cl;
 	      
 	  }

@@ -11,10 +11,11 @@ public class plane extends object3d{
 	double planeheight;
 	
 	
-	public plane(Color c, double ph, double refl) {
+	public plane(Color c, double ph, double refl, boolean seeThrough) {
 		this.planeheight = ph;
 		this.c = c;
 		this.reflectivity = refl;
+		this.seeThrough = seeThrough;
 	}
 	@Override
 	public Vect intersects(Ray r) {

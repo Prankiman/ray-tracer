@@ -10,6 +10,8 @@ public abstract class object3d{
 	
 	Vect normal;
 	
+	public boolean seeThrough;
+	
 	public double reflectivity;
 	
 	public Vect getNormalAt(Vect point){
