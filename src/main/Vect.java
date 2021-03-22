@@ -83,16 +83,26 @@ public class Vect{
     	r.direction = reflectionVector;
     	return r;
 	}
-	public static  Ray refract(Vect v, Vect dir, Vect normal) {
-	double r = 0.66;//refraction amount
+	public static  Ray refract(Vect v, Vect dir, Vect normal) {// https://www.scratchapixel.com/lessons/3d-basic-rendering/introduction-to-shading/reflection-refraction-fresnel--refraction
+	double n2 = 1.52;//refractionindex
 	
 		Ray ry = new Ray();
-	
-		double cosI = Vect.Vector_DotProduct(normal, dir);
-	
-		ry.direction = Vect.subV(Vect.Vector_Mul(dir, r), Vect.Vector_Mul(normal,  (-cosI + r * cosI)));
-	
-
+		
+	    double cosi = Vect.Vector_DotProduct(dir, normal);
+	    double etai = 1.000273, etat = n2;
+	    Vect n = normal; 
+	    
+	    if (cosi < 0) {
+	    	cosi = -cosi;
+	    } 
+	    else {
+	    	n = Vect.Vector_Mul(normal, -1);
+	    } 
+	    double eta = etai / etat; 
+	    double k = 1 - eta * eta * (1 - cosi * cosi); 
+	    //if k < 0 then its total iternal reflection meaning no refraction;( happens wjem etat < etai
+	    ry.direction =  k < 0 ? null : Vect.addV(Vect.Vector_Mul(dir, eta) , Vect.Vector_Mul(n,(eta * cosi - Math.sqrt(k)))); 
+		 
 		ry.origin = Vect.addV(v, Vect.Vector_Mul(ry.direction, 0.0001));
 		
 		return ry;
